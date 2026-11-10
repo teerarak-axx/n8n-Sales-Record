@@ -1,0 +1,1088 @@
+{
+  "name": "Daily Sales Report",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "line-sales",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        -1024
+      ],
+      "id": "df8384f0-54fe-4806-a07d-fa971133e96d",
+      "name": "Webhook"
+    },
+    {
+      "parameters": {
+        "action": "hmac",
+        "binaryData": true,
+        "dataPropertyName": "expectedSignature",
+        "encoding": "base64"
+      },
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -1024
+      ],
+      "id": "daacceed-0411-4bfd-ab18-324545250afb",
+      "name": "Crypto"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e6f2d053-3c37-425b-9878-6b272e75a664",
+              "leftValue": "={{ $json.expectedSignature }}",
+              "rightValue": "={{ $('Webhook').item.json.headers['x-line-signature'] }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": "={{ false }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        -1024
+      ],
+      "id": "0d566c42-261b-4e15-8cb9-d92a9ca2b7b8",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "respondWith": "noData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        -1024
+      ],
+      "id": "4f62b0c7-974b-4c59-8f6f-a864e6b73e37",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "respondWith": "noData",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        -832
+      ],
+      "id": "5317abd2-db69-4ccb-8a41-5d7a6f0b803d",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "06e3eb99-558c-4431-80e3-c8f5dea096a4",
+              "leftValue": "={{ $('Webhook').item.json.body.events[0]?.type ?? '' }}",
+              "rightValue": "message",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        896,
+        -1024
+      ],
+      "id": "509aa51a-7a41-453d-aecc-67a3d50d07c3",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4e5e3780-af1e-4dbd-a452-45ea70db9406",
+              "leftValue": "={{ $('Webhook').item.json.body.events[0]?.message?.type ?? '' }}",
+              "rightValue": "text",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1120,
+        -1024
+      ],
+      "id": "8950d34d-c579-4353-900f-8ac92337d256",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a52d7a06-f799-4453-ba9b-1a5cc50bd8dd",
+              "name": "menu",
+              "value": "={{ $('Webhook').item.json.body.events[0].message.text.trim().split(/\\s+/)[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "8f0e8f12-eaeb-4099-a9e5-138a05b368e6",
+              "name": "quantity",
+              "value": "={{ $('Webhook').item.json.body.events[0].message.text.trim().split(/\\s+/)[1] ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "1b72541c-0b14-4c72-a1b2-416fba2e0d5a",
+              "name": "payment",
+              "value": "={{ $('Webhook').item.json.body.events[0].message.text.trim().split(/\\s+/)[2] ?? '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1568,
+        -832
+      ],
+      "id": "87109d36-ef67-42de-a39b-eff5878da872",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "205e3295-93ae-4b05-9c5c-05faa4e0adeb",
+              "leftValue": "={{ $('Webhook').item.json.body.events[0].message.text.trim().split(/\\s+/).length === 3 && /^[1-9]\\d*$/.test($json.quantity) && ['เงินสด', 'โอน'].includes($json.payment) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1792,
+        -832
+      ],
+      "id": "cecd2c65-7262-4597-9cf2-32b6301c40e2",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_GOOGLE_SPREADSHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "เมนู"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "=ชื่อเมนู",
+              "lookupValue": "={{ $json.menu }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2016,
+        -832
+      ],
+      "id": "c578e4c0-60d2-4d2a-87e4-360cf5c6cf1e",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3e53d7e1-eb89-4fc2-a891-9ce10275d1af",
+              "name": "total",
+              "value": "={{ Number($json['ราคา']) * Number($('Edit Fields').item.json.quantity) }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        2464,
+        -928
+      ],
+      "id": "f95d1fac-85b9-4ebd-8270-1cdbaad9c382",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_GOOGLE_SPREADSHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "รายการขาย"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "LINE Event ID",
+              "lookupValue": "={{ $('Webhook').item.json.body.events[0].webhookEventId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2688,
+        -928
+      ],
+      "id": "730b0f86-8a9b-4193-b5eb-d7c62d553e74",
+      "name": "Get row(s) in sheet1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6fd3d5e4-a73f-4ca8-ac8b-1bc4e4b4ed57",
+              "leftValue": "={{ !$json['LINE Event ID'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2912,
+        -928
+      ],
+      "id": "2382558d-a3f3-44c5-978f-f238be927edd",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_GOOGLE_SPREADSHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "รายการขาย"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "รหัสรายการ": "={{ $('Webhook').item.json.body.events[0].webhookEventId }}",
+            "วันเวลาขาย": "={{ DateTime.fromMillis($('Webhook').item.json.body.events[0].timestamp).setZone('Asia/Bangkok').toFormat('yyyy-MM-dd HH:mm:ss') }}",
+            "วันที่ขาย": "={{ DateTime.fromMillis($('Webhook').item.json.body.events[0].timestamp).setZone('Asia/Bangkok').toISODate() }}",
+            "LINE User ID": "={{ $('Webhook').item.json.body.events[0].source.userId }}",
+            "รหัสเมนู": "={{ $('Get row(s) in sheet').item.json['รหัสเมนู'] }}",
+            "ชื่อเมนู": "={{ $('Get row(s) in sheet').item.json['ชื่อเมนู'] }}",
+            "จำนวนแก้ว": "={{ Number($('Edit Fields').item.json.quantity) }}",
+            "ราคาต่อแก้ว": "={{ Number($('Get row(s) in sheet').item.json['ราคา']) }}",
+            "ยอดรวม": "={{ $('Edit Fields1').item.json.total }}",
+            "การชำระเงิน": "={{ $('Edit Fields').item.json.payment }}",
+            "สถานะ": "บันทึกแล้ว",
+            "LINE Event ID": "={{ $('Webhook').item.json.body.events[0].webhookEventId }}",
+            "พนักงาน": "={{ $('Get row(s) in sheet2').item.json['ชื่อพนักงาน'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "รหัสรายการ",
+              "displayName": "รหัสรายการ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "วันเวลาขาย",
+              "displayName": "วันเวลาขาย",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "วันที่ขาย",
+              "displayName": "วันที่ขาย",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "LINE User ID",
+              "displayName": "LINE User ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "พนักงาน",
+              "displayName": "พนักงาน",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "รหัสเมนู",
+              "displayName": "รหัสเมนู",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ชื่อเมนู",
+              "displayName": "ชื่อเมนู",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "จำนวนแก้ว",
+              "displayName": "จำนวนแก้ว",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ราคาต่อแก้ว",
+              "displayName": "ราคาต่อแก้ว",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ยอดรวม",
+              "displayName": "ยอดรวม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "การชำระเงิน",
+              "displayName": "การชำระเงิน",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "สถานะ",
+              "displayName": "สถานะ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "LINE Event ID",
+              "displayName": "LINE Event ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3360,
+        -928
+      ],
+      "id": "f1aed082-ba4e-4013-b5f7-3e0e21984e86",
+      "name": "Append row in sheet",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_GOOGLE_SPREADSHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "พนักงาน"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "LINE User ID",
+              "lookupValue": "={{ $('Webhook').item.json.body.events[0]?.source?.userId ?? '__missing_line_user__' }}"
+            },
+            {
+              "lookupColumn": "สถานะ",
+              "lookupValue": "ใช้งาน"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3136,
+        -928
+      ],
+      "id": "76d5746c-aeea-4bf9-8df7-880c312fe904",
+      "name": "Get row(s) in sheet2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  replyToken: $('Webhook').item.json.body.events[0].replyToken,\n  messages: [{\n    type: 'text',\n    text: 'บันทึกยอดขายสำเร็จ\\n'\n      + $json['ชื่อเมนู'] + ' ' + $json['จำนวนแก้ว'] + ' แก้ว\\n'\n      + 'ยอดรวม ' + $json['ยอดรวม'] + ' บาท'\n  }]\n} }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        3584,
+        -1024
+      ],
+      "id": "a65157c5-d595-4fc1-a4b1-48a34caee81e",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { replyToken: $('Webhook').item.json.body.events[0].replyToken, messages: [{ type: 'text', text: 'ยังยืนยันการบันทึกยอดขายไม่ได้ กรุณาติดต่อผู้ดูแลเพื่อตรวจสอบก่อนส่งซ้ำ' }] } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        3584,
+        -832
+      ],
+      "id": "fd8cfec4-b455-493d-be10-9e3c0ec35d66",
+      "name": "แจ้งบันทึกผิดพลาด"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { replyToken: $('Webhook').item.json.body.events[0].replyToken, messages: [{ type: 'text', text: 'ยังไม่ได้บันทึกยอดขาย เนื่องจากรูปแบบข้อมูลไม่ถูกต้อง\\nกรุณาส่ง: ชื่อเมนู จำนวน เงินสดหรือโอน\\nตัวอย่าง: ชาไทย 2 เงินสด' }] } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2016,
+        -640
+      ],
+      "id": "62b18c7d-c7e1-4466-9fa3-09b1cfe7b951",
+      "name": "แจ้งรูปแบบไม่ถูกต้อง"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { replyToken: $('Webhook').item.json.body.events[0].replyToken, messages: [{ type: 'text', text: 'ยังไม่ได้บันทึกยอดขาย เพราะไม่พบเมนูนี้ในร้าน\\nกรุณาตรวจสอบชื่อเมนูแล้วส่งใหม่\\nตัวอย่าง: ชาไทย 2 เงินสด' }] } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2464,
+        -736
+      ],
+      "id": "192fc14b-d7e0-49c7-92ca-f628289c98e5",
+      "name": "แจ้งไม่พบเมนู"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "205e3295-93ae-4b05-9c5c-05faa4e0adeb",
+              "leftValue": "={{ !!$json['รหัสเมนู'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2240,
+        -832
+      ],
+      "id": "5e0edb88-0680-4c13-adc1-2156e858369b",
+      "name": "ตรวจพบเมนู"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_GOOGLE_SPREADSHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "รายการขาย"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1792,
+        -1024
+      ],
+      "id": "3e8774c9-ccb7-40b0-97ec-1c08ff6d2b70",
+      "name": "Get row(s) in sheet3",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const today = $now.setZone('Asia/Bangkok').toISODate();\nconst monday = new Date(today + 'T00:00:00Z');\nmonday.setUTCDate(monday.getUTCDate() - (monday.getUTCDay() + 6) % 7);\n\nconst periods = [\n  ['วันนี้', today],\n  ['สัปดาห์นี้', monday.toISOString().slice(0, 10)],\n  ['เดือนนี้', today.slice(0, 7) + '-01'],\n  ['ปีนี้', today.slice(0, 4) + '-01-01'],\n];\n\nconst sales = $input.all().map(item => item.json)\n  .filter(row => String(row['สถานะ'] ?? '').trim() === 'บันทึกแล้ว')\n  .map(row => {\n    const date = String(row['วันที่ขาย'] ?? '').trim();\n    const parsed = new Date(date + 'T00:00:00Z');\n    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(date) ||\n        !Number.isFinite(parsed.getTime()) ||\n        parsed.toISOString().slice(0, 10) !== date) {\n      throw new Error('วันที่ขายไม่ถูกต้อง แถว ' + row.row_number);\n    }\n    const amount = Number(String(row['ยอดรวม'] ?? '').replace(/,/g, ''));\n    const cups = Number(row['จำนวนแก้ว']);\n    if (row['ยอดรวม'] == null || String(row['ยอดรวม']).trim() === '' ||\n        !Number.isFinite(amount) || amount < 0 ||\n        !Number.isSafeInteger(cups) || cups < 1) {\n      throw new Error('ตัวเลขยอดขายไม่ถูกต้อง แถว ' + row.row_number);\n    }\n    return { date, cents: Math.round(amount * 100), cups };\n  });\n\nconst reports = periods.map(([label, from]) => {\n  const rows = sales.filter(sale => sale.date >= from && sale.date <= today);\n  return {\n    label, from, to: today,\n    transactions: rows.length,\n    cups: rows.reduce((sum, sale) => sum + sale.cups, 0),\n    total: rows.reduce((sum, sale) => sum + sale.cents, 0) / 100,\n  };\n});\n\n\nconst viaLine = $('Webhook').isExecuted;\nlet command = '';\nlet recipientId = 'YOUR_LINE_REPORT_RECIPIENT_ID';\nif (viaLine) {\n  const event = $('Webhook').first().json.body.events[0];\n  recipientId = event.source?.userId;\n  const allowed = $('Get row(s) in sheet4').all().some(item =>\n    item.json['LINE User ID'] === recipientId &&\n    item.json['สถานะ'] === 'ใช้งาน'\n  );\n  if (!allowed) throw new Error('ไม่มีสิทธิ์ดูรายงานยอดขาย');\n  command = (event.message?.text ?? '').replace(/[\\u200B-\\u200D\\uFEFF]/g, '').trim().replace(/^ยอดขาย/, 'ยอด').replace(/อาทิตย์/g, 'สัปดาห์');\n}\nconst commandLabels = {\n  'ยอดวันนี้': 'วันนี้',\n  'ยอดสัปดาห์นี้': 'สัปดาห์นี้',\n  'ยอดเดือนนี้': 'เดือนนี้',\n  'ยอดปีนี้': 'ปีนี้',\n};\nif (viaLine && !commandLabels[command]) throw new Error('คำสั่งรายงานไม่ถูกต้อง');\nconst selectedReports = viaLine\n  ? reports.filter(report => report.label === commandLabels[command])\n  : reports;\n\nconst message = 'สรุปยอดขาย ณ วันที่ ' + today + '\\n\\n' + selectedReports.map(r =>\n  r.label + ': ' + r.total.toLocaleString('th-TH', {\n    minimumFractionDigits: 2, maximumFractionDigits: 2,\n  }) + ' บาท\\n' + r.cups + ' แก้ว / ' + r.transactions + ' รายการ'\n).join('\\n\\n');\n\nreturn [{ json: { today, reports, message, recipientId } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2016,
+        -1024
+      ],
+      "id": "8d10c270-5846-4fa7-a37e-8f88d153e5de",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { to: $json.recipientId, messages: [{ type: 'text', text: $json.message }] } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2240,
+        -1024
+      ],
+      "id": "885ae334-b173-4212-b87a-e913d2c556f6",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "205e3295-93ae-4b05-9c5c-05faa4e0adeb",
+              "leftValue": "={{ ['ยอดวันนี้', 'ยอดสัปดาห์นี้', 'ยอดเดือนนี้', 'ยอดปีนี้'].includes(($('Webhook').item.json.body.events[0]?.message?.text ?? '').replace(/[\\u200B-\\u200D\\uFEFF]/g, '').trim().replace(/^ยอดขาย/, 'ยอด').replace(/อาทิตย์/g, 'สัปดาห์')) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1344,
+        -1024
+      ],
+      "id": "2928baea-3a54-4cb4-bbec-e548d667b291",
+      "name": "แยกคำสั่งรายงาน"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_GOOGLE_SPREADSHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "พนักงาน"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "LINE User ID",
+              "lookupValue": "={{ $('Webhook').item.json.body.events[0]?.source?.userId ?? '__missing_line_user__' }}"
+            },
+            {
+              "lookupColumn": "สถานะ",
+              "lookupValue": "ใช้งาน"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1568,
+        -1120
+      ],
+      "id": "9ff72b1e-7c0c-4b5e-9268-58b6bdb80379",
+      "name": "Get row(s) in sheet4"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 21
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        1776,
+        -1264
+      ],
+      "id": "d13c5cdc-7377-479e-a459-f215e50e85cc",
+      "name": "Schedule Trigger"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Crypto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crypto": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "แยกคำสั่งรายงาน",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "แจ้งรูปแบบไม่ถูกต้อง",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "ตรวจพบเมนู",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "แจ้งบันทึกผิดพลาด",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ตรวจพบเมนู": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "แจ้งไม่พบเมนู",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet3": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        []
+      ]
+    },
+    "แยกคำสั่งรายงาน": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet4": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "active": false
+}
